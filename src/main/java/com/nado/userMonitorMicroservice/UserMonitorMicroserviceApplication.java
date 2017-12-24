@@ -26,9 +26,9 @@ import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
 
 @SpringBootApplication
-public class Customer1MicroserviceApplication {
+public class UserMonitorMicroserviceApplication {
 	public static void main(String[] args) {
-		SpringApplication.run(Customer1MicroserviceApplication.class, args);
+		SpringApplication.run(UserMonitorMicroserviceApplication.class, args);
 	}
 	@Component
 	public class MyRunner implements CommandLineRunner {
