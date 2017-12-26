@@ -19,18 +19,22 @@ public class UserRepositoryRedisImpl implements UserRepository {
 	SetOperations<String, String> setOperations;
 	HashOperations<String, String, String> hashOperations;
 	ListOperations<String, String> listOperations;
-	//ValueOperations<String, String> valueOperations;
+
+	// ValueOperations<String, String> valueOperations;
 	@PostConstruct
 	public void init() {
 		setOperations = stringRedisTemplate.opsForSet();
 		hashOperations = stringRedisTemplate.opsForHash();
 		listOperations = stringRedisTemplate.opsForList();
-		
+
 	}
-	private static String userKey(String uid){
-		return "nado:user:uid:"+uid;
+
+	private static String userKey(String uid) {
+		return "nado:user:uid:" + uid;
 	}
-	private static final String NNUID_HASH_MAP_KEY ="nado:user:nns";  
+
+	private static final String NNUID_HASH_MAP_KEY = "nado:user:nns";
+
 	@Override
 	public String getNn(String uid) {
 		// TODO Auto-generated method stub
@@ -46,10 +50,12 @@ public class UserRepositoryRedisImpl implements UserRepository {
 	@Override
 	public void save(String uid, String nn) {
 		// TODO Auto-generated method stub
-		//save nado:user:nns, {nn}::{uid}
-		hashOperations.put(NNUID_HASH_MAP_KEY, nn, uid);
-		//save "nado:user:uid:"+{uid} nn::{nn}
-		hashOperations.put(userKey(uid), "nn", nn);
+		// save nado:user:nns, {nn}::{uid}
+		if (nn != null && uid != null) {
+			hashOperations.put(NNUID_HASH_MAP_KEY, nn, uid);
+			// save "nado:user:uid:"+{uid} nn::{nn}
+			hashOperations.put(userKey(uid), "nn", nn);
+		}
 	}
 
 	@Override

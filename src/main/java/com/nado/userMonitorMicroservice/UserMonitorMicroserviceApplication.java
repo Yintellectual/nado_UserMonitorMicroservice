@@ -5,6 +5,8 @@ import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -30,19 +32,24 @@ public class UserMonitorMicroserviceApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(UserMonitorMicroserviceApplication.class, args);
 	}
+
+	private static final Logger logger = LoggerFactory.getLogger(UserMonitorMicroserviceApplication.class);
+
 	@Component
 	public class MyRunner implements CommandLineRunner {
 		@Override
 		public void run(String... args) throws Exception {
-			
+
 		}
 	}
+
 	@Autowired
 	ActiveUserRepository activeUserRepository;
 	@Autowired
 	UserRepository userRepository;
+
 	@Bean
-	public Channel channel() throws Exception{
+	public Channel channel() throws Exception {
 		ConnectionFactory factory = new ConnectionFactory();
 		factory.setHost("localhost");
 		Connection connection = factory.newConnection();
@@ -55,24 +62,35 @@ public class UserMonitorMicroserviceApplication {
 				@Override
 				public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties,
 						byte[] body) {
-					String message = "";
 					try {
-						message = new String(body, "UTF-8");
-					} catch (UnsupportedEncodingException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-					try {
-						LocalDateTime now = LocalDateTime.now();
-						ExtractedUserInfo extractedUserInfo = type.extractUserInfo(message);
-						activeUserRepository.addUser(extractedUserInfo.getUid(), now);
-						userRepository.save(extractedUserInfo.getUid(), extractedUserInfo.getNn());
-					} finally {
+						String message = "";
+						try {
+							message = new String(body, "UTF-8");
+						} catch (UnsupportedEncodingException e) {
+							// TODO Auto-generated catch block
+							logger.error(e.getMessage());
+						}
+						try {
+							LocalDateTime now = LocalDateTime.now();
+							ExtractedUserInfo extractedUserInfo = type.extractUserInfo(message);
+							activeUserRepository.addUser(extractedUserInfo.getUid(), now);
+							userRepository.save(extractedUserInfo.getUid(), extractedUserInfo.getNn());
+						} finally {
+							try {
+								channel.basicAck(envelope.getDeliveryTag(), false);
+							} catch (IOException e) {
+								// TODO Auto-generated catch block
+								logger.error(e.getMessage());
+							}
+						}
+					} catch (Exception e) {
+						logger.error(e.getMessage());
+					}finally {
 						try {
 							channel.basicAck(envelope.getDeliveryTag(), false);
 						} catch (IOException e) {
 							// TODO Auto-generated catch block
-							e.printStackTrace();
+							logger.error(e.getMessage());
 						}
 					}
 				}
