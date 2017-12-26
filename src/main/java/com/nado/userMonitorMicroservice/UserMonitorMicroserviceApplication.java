@@ -70,22 +70,14 @@ public class UserMonitorMicroserviceApplication {
 							// TODO Auto-generated catch block
 							logger.error(e.getMessage());
 						}
-						try {
-							LocalDateTime now = LocalDateTime.now();
-							ExtractedUserInfo extractedUserInfo = type.extractUserInfo(message);
-							activeUserRepository.addUser(extractedUserInfo.getUid(), now);
-							userRepository.save(extractedUserInfo.getUid(), extractedUserInfo.getNn());
-						} finally {
-							try {
-								channel.basicAck(envelope.getDeliveryTag(), false);
-							} catch (IOException e) {
-								// TODO Auto-generated catch block
-								logger.error(e.getMessage());
-							}
-						}
+						LocalDateTime now = LocalDateTime.now();
+						ExtractedUserInfo extractedUserInfo = type.extractUserInfo(message);
+						activeUserRepository.addUser(extractedUserInfo.getUid(), now);
+						userRepository.save(extractedUserInfo.getUid(), extractedUserInfo.getNn());
+
 					} catch (Exception e) {
 						logger.error(e.getMessage());
-					}finally {
+					} finally {
 						try {
 							channel.basicAck(envelope.getDeliveryTag(), false);
 						} catch (IOException e) {
